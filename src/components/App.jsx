@@ -21,6 +21,7 @@ class App extends Component {
     per_page: 12,
     page: 1,
     isLoading: false,
+    isLoadMore: false,
     error: null,
   };
 
@@ -38,8 +39,48 @@ class App extends Component {
     fetchImages(this.state.searchQuery, this.state.per_page, this.state.page)
       .then(el => {
         console.log(el);
+        let isLoadMore = true;
+        if (el.totalHits <= this.state.page * this.state.per_page) {
+          isLoadMore = false;
+          window.alert(
+            "We're sorry, but you've reached the end of search results."
+          );
+        }
         this.setState({
           images: el.hits,
+          isLoadMore,
+        });
+      })
+      .catch(error => {
+        this.setState({ error });
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
+      });
+  };
+
+  hendleLoadMore = event => {
+    fetchImages(
+      this.state.searchQuery,
+      this.state.per_page,
+      this.state.page + 1
+    )
+      .then(el => {
+        console.log(el);
+        const images = this.state.images;
+        let isLoadMore = true;
+        const page = this.state.page;
+        const per_page = this.state.per_page;
+        if (el.totalHits <= page * per_page) {
+          isLoadMore = false;
+          window.alert(
+            "We're sorry, but you've reached the end of search results."
+          );
+        }
+        this.setState({
+          images: [...images, ...el.hits],
+          isLoadMore,
+          page: this.state.page + 1,
         });
       })
       .catch(error => {
@@ -51,7 +92,7 @@ class App extends Component {
   };
 
   render() {
-    const { images, isLoading, error } = this.state;
+    const { images, isLoading, isLoadMore, error } = this.state;
 
     return (
       <div style={this.appStyles}>
@@ -75,7 +116,7 @@ class App extends Component {
                 );
               })}
             </ImageGallery>
-            {images.length > 0 && <Button />}
+            {isLoadMore && <Button hendleLoadMore={this.hendleLoadMore} />}
           </Fragment>
         )}
       </div>
