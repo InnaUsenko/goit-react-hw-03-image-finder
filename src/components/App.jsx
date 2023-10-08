@@ -40,7 +40,6 @@ class App extends Component {
     });
     fetchImages(this.state.searchQuery, this.state.per_page, this.state.page)
       .then(el => {
-        console.log(el);
         let isLoadMore = true;
         if (el.totalHits <= this.state.page * this.state.per_page) {
           isLoadMore = false;
@@ -68,7 +67,6 @@ class App extends Component {
       this.state.page + 1
     )
       .then(el => {
-        console.log(el);
         const images = this.state.images;
         let isLoadMore = true;
         const page = this.state.page;
