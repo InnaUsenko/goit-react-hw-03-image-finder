@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Searchbar } from './Searchbar/Searchbar';
 
 class App extends Component {
   appStyles = {
@@ -8,7 +9,11 @@ class App extends Component {
     paddingBottom: '24px',
   };
   render() {
-    return <div style={this.appStyles}>React homework template</div>;
+    return (
+      <div style={this.appStyles}>
+        <Searchbar />
+      </div>
+    );
   }
 }
 
