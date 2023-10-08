@@ -4,7 +4,7 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
-// import { Modal } from './Modal/Modal';
+import { Modal } from './Modal/Modal';
 import { fetchImages } from '../services/api';
 
 class App extends Component {
@@ -22,6 +22,8 @@ class App extends Component {
     page: 1,
     isLoading: false,
     isLoadMore: false,
+    isModalShow: false,
+    pict: { url: null, alt: 'no image' },
     error: null,
   };
 
@@ -91,8 +93,45 @@ class App extends Component {
       });
   };
 
+  hendleModal = event => {
+    const id = event.target.id;
+
+    const images = this.state.images;
+    let pict = { id: null, url: null, alt: 'no image' };
+    for (const img of images) {
+      if (img.id == id) {
+        pict = img;
+        break;
+      }
+    }
+    this.setState({
+      isModalShow: true,
+      pict,
+    });
+  };
+
+  closeModal = event => {
+    this.setState({
+      isModalShow: false,
+    });
+  };
+
+  escFunction = event => {
+    if (event.key === 'Escape') {
+      this.setState({
+        isModalShow: false,
+      });
+    }
+  };
+  componentDidMount() {
+    document.addEventListener('keydown', this.escFunction, false);
+  }
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.escFunction, false);
+  }
+
   render() {
-    const { images, isLoading, isLoadMore, error } = this.state;
+    const { images, isLoading, isLoadMore, isModalShow, error } = this.state;
 
     return (
       <div style={this.appStyles}>
@@ -110,14 +149,23 @@ class App extends Component {
                 return (
                   <ImageGalleryItem
                     key={el.id}
+                    id={el.id}
                     src={el.previewURL}
                     alt={el.tags}
+                    hendleModal={this.hendleModal}
                   />
                 );
               })}
             </ImageGallery>
             {isLoadMore && <Button hendleLoadMore={this.hendleLoadMore} />}
           </Fragment>
+        )}
+        {isModalShow && (
+          <Modal
+            src={this.state.pict.largeImageURL}
+            alt={this.state.pict.tags}
+            closeModal={this.closeModal}
+          />
         )}
       </div>
     );

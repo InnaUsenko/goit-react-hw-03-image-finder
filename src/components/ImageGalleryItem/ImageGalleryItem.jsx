@@ -3,9 +3,11 @@ export const ImageGalleryItem = props => {
   return (
     <li className={css.imageGalleryItem}>
       <img
+        id={props.id}
         className={css.imageGalleryItemImage}
         src={props.src}
         alt={props.alt}
+        onClick={props.hendleModal}
       />
     </li>
   );
