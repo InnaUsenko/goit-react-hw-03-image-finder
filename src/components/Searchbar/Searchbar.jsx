@@ -22,6 +22,7 @@ export const Searchbar = props => {
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
+          onChange={props.hendleOnChange}
         />
       </form>
     </header>

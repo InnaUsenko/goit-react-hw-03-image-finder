@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
 import { Button } from './Button/Button';
-// import { Loader } from './Loader/Loader';
+import { Loader } from './Loader/Loader';
 // import { Modal } from './Modal/Modal';
+import { fetchImages } from '../services/api';
 
 class App extends Component {
   appStyles = {
@@ -19,37 +20,64 @@ class App extends Component {
     searchQuery: '',
     per_page: 12,
     page: 1,
+    isLoading: false,
+    error: null,
   };
 
-  downloadsPictures = event => {
-    event.preventDefault();
-    const img = {
-      id: '',
-      src: 'https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png',
-      alt: 'ololo',
-    };
-    const images = [];
-    for (let i = 0; i < 12; i++) {
-      img.id = i;
-      images.push(img);
-    }
+  hendleOnChange = event => {
+    const searchQuery = event.target.value;
     this.setState({
-      images,
+      searchQuery,
     });
   };
+  handleSearch = async event => {
+    event.preventDefault();
+    this.setState({
+      isLoading: true,
+    });
+    fetchImages(this.state.searchQuery, this.state.per_page, this.state.page)
+      .then(el => {
+        console.log(el);
+        this.setState({
+          images: el.hits,
+        });
+      })
+      .catch(error => {
+        this.setState({ error });
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
+      });
+  };
+
   render() {
-    const { images } = this.state;
+    const { images, isLoading, error } = this.state;
 
     return (
       <div style={this.appStyles}>
-        <Searchbar handleSearch={this.downloadsPictures} />
-        <ImageGallery>
-          {images.map(el => {
-            return <ImageGalleryItem key={el.id} src={el.src} alt={el.alt} />;
-          })}
-        </ImageGallery>
-
-        {images.length > 0 ? <Button /> : <p>No images</p>}
+        <Searchbar
+          handleSearch={this.handleSearch}
+          hendleOnChange={this.hendleOnChange}
+        />
+        {error != null && <p>{error}</p>}
+        {isLoading ? (
+          <Loader />
+        ) : (
+          <Fragment>
+            <ImageGallery>
+              {images.map(el => {
+                return (
+                  <ImageGalleryItem
+                    key={el.id}
+                    src={el.previewURL}
+                    alt={el.tags}
+                  />
+                );
+              })}
+            </ImageGallery>
+            {images.length > 0 && <Button />}
+          </Fragment>
+        )}
       </div>
     );
   }
