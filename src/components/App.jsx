@@ -99,7 +99,7 @@ class App extends Component {
     const images = this.state.images;
     let pict = { id: null, url: null, alt: 'no image' };
     for (const img of images) {
-      if (img.id == id) {
+      if (img.id.toString() === id.toString()) {
         pict = img;
         break;
       }
