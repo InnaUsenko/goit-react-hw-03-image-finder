@@ -38,18 +38,18 @@ class App extends Component {
     });
   };
   render() {
-    const img = this.state.images;
+    const { images } = this.state;
 
     return (
       <div style={this.appStyles}>
         <Searchbar handleSearch={this.downloadsPictures} />
         <ImageGallery>
-          {img.map(el => {
+          {images.map(el => {
             return <ImageGalleryItem key={el.id} src={el.src} alt={el.alt} />;
           })}
         </ImageGallery>
 
-        {img.length > 0 ? <Button /> : <p>No images</p>}
+        {images.length > 0 ? <Button /> : <p>No images</p>}
       </div>
     );
   }
