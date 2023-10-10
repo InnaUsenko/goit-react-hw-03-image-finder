@@ -7,7 +7,9 @@ export const ImageGalleryItem = props => {
         className={css.imageGalleryItemImage}
         src={props.src}
         alt={props.alt}
-        onClick={props.hendleModal}
+        onClick={() => {
+          props.showModal(props.id);
+        }}
       />
     </li>
   );

@@ -1,10 +1,10 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
-import { Modal } from './Modal/Modal';
+import Modal from './Modal/Modal';
 import { fetchImages } from '../services/api';
 
 class App extends Component {
@@ -41,40 +41,14 @@ class App extends Component {
     });
   };
 
-  hendleLoadMore = event => {
-    fetchImages(
-      this.state.searchQuery,
-      this.state.per_page,
-      this.state.page + 1
-    )
-      .then(el => {
-        const images = this.state.images;
-        let isLoadMore = true;
-        const page = this.state.page;
-        const per_page = this.state.per_page;
-        if (el.totalHits <= page * per_page) {
-          isLoadMore = false;
-          window.alert(
-            "We're sorry, but you've reached the end of search results."
-          );
-        }
-        this.setState({
-          images: [...images, ...el.hits],
-          isLoadMore,
-          page: this.state.page + 1,
-        });
-      })
-      .catch(error => {
-        this.setState({ error });
-      })
-      .finally(() => {
-        this.setState({ isLoading: false });
-      });
+  hendleLoadMore = () => {
+    this.setState({
+      page: this.state.page + 1,
+    });
   };
 
-  hendleModal = event => {
-    const id = event.target.id;
-
+  showModal = id => {
+    console.log('ID: ' + id);
     const images = this.state.images;
     let pict = { id: null, url: null, alt: 'no image' };
     for (const img of images) {
@@ -89,30 +63,17 @@ class App extends Component {
     });
   };
 
-  closeModal = event => {
+  closeModal = () => {
     this.setState({
       isModalShow: false,
     });
   };
 
-  escFunction = event => {
-    if (event.key === 'Escape') {
-      this.setState({
-        isModalShow: false,
-      });
-    }
-  };
-  componentDidMount() {
-    document.addEventListener('keydown', this.escFunction, false);
-  }
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.escFunction, false);
-  }
-
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (
       this.state.searchQuery &&
-      prevState.searchQuery !== this.state.searchQuery
+      (prevState.searchQuery !== this.state.searchQuery ||
+        prevState.page !== this.state.page)
     ) {
       this.setState({
         isLoading: true,
@@ -127,8 +88,7 @@ class App extends Component {
             );
           }
           this.setState({
-            images: el.hits,
-            page: 1,
+            images: [...this.state.images, ...el.hits],
             isLoadMore,
           });
         })
@@ -147,27 +107,22 @@ class App extends Component {
     return (
       <div style={this.appStyles}>
         <Searchbar handleSearch={this.handleSearch} />
+        <ImageGallery>
+          {images.map(el => {
+            return (
+              <ImageGalleryItem
+                key={el.id}
+                id={el.id}
+                src={el.webformatURL}
+                alt={el.tags}
+                showModal={this.showModal}
+              />
+            );
+          })}
+        </ImageGallery>
+        {isLoadMore && <Button hendleLoadMore={this.hendleLoadMore} />}
         {error != null && <p>{error}</p>}
-        {isLoading ? (
-          <Loader />
-        ) : (
-          <Fragment>
-            <ImageGallery>
-              {images.map(el => {
-                return (
-                  <ImageGalleryItem
-                    key={el.id}
-                    id={el.id}
-                    src={el.webformatURL}
-                    alt={el.tags}
-                    hendleModal={this.hendleModal}
-                  />
-                );
-              })}
-            </ImageGallery>
-            {isLoadMore && <Button hendleLoadMore={this.hendleLoadMore} />}
-          </Fragment>
-        )}
+        {isLoading && <Loader />}
         {isModalShow && (
           <Modal
             src={this.state.pict.largeImageURL}
