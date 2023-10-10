@@ -48,7 +48,6 @@ class App extends Component {
   };
 
   showModal = id => {
-    console.log('ID: ' + id);
     const images = this.state.images;
     let pict = { id: null, url: null, alt: 'no image' };
     for (const img of images) {
