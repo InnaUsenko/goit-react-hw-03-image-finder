@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Searchbar } from './Searchbar/Searchbar';
+import Searchbar from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
 import { Button } from './Button/Button';
@@ -27,37 +27,18 @@ class App extends Component {
     error: null,
   };
 
-  hendleOnChange = event => {
-    const searchQuery = event.target.value;
+  handleSearch = searchQuery => {
     this.setState({
-      searchQuery,
+      images: [],
+      searchQuery: searchQuery,
+      per_page: 12,
+      page: 1,
+      isLoading: false,
+      isLoadMore: false,
+      isModalShow: false,
+      pict: { url: null, alt: 'no image' },
+      error: null,
     });
-  };
-  handleSearch = async event => {
-    event.preventDefault();
-    this.setState({
-      isLoading: true,
-    });
-    fetchImages(this.state.searchQuery, this.state.per_page, this.state.page)
-      .then(el => {
-        let isLoadMore = true;
-        if (el.totalHits <= this.state.page * this.state.per_page) {
-          isLoadMore = false;
-          window.alert(
-            "We're sorry, but you've reached the end of search results."
-          );
-        }
-        this.setState({
-          images: el.hits,
-          isLoadMore,
-        });
-      })
-      .catch(error => {
-        this.setState({ error });
-      })
-      .finally(() => {
-        this.setState({ isLoading: false });
-      });
   };
 
   hendleLoadMore = event => {
@@ -128,15 +109,44 @@ class App extends Component {
     document.removeEventListener('keydown', this.escFunction, false);
   }
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (
+      this.state.searchQuery &&
+      prevState.searchQuery !== this.state.searchQuery
+    ) {
+      this.setState({
+        isLoading: true,
+      });
+      fetchImages(this.state.searchQuery, this.state.per_page, this.state.page)
+        .then(el => {
+          let isLoadMore = true;
+          if (el.totalHits <= this.state.page * this.state.per_page) {
+            isLoadMore = false;
+            window.alert(
+              "We're sorry, but you've reached the end of search results."
+            );
+          }
+          this.setState({
+            images: el.hits,
+            page: 1,
+            isLoadMore,
+          });
+        })
+        .catch(error => {
+          this.setState({ error });
+        })
+        .finally(() => {
+          this.setState({ isLoading: false });
+        });
+    }
+  }
+
   render() {
     const { images, isLoading, isLoadMore, isModalShow, error } = this.state;
 
     return (
       <div style={this.appStyles}>
-        <Searchbar
-          handleSearch={this.handleSearch}
-          hendleOnChange={this.hendleOnChange}
-        />
+        <Searchbar handleSearch={this.handleSearch} />
         {error != null && <p>{error}</p>}
         {isLoading ? (
           <Loader />
@@ -148,7 +158,7 @@ class App extends Component {
                   <ImageGalleryItem
                     key={el.id}
                     id={el.id}
-                    src={el.previewURL}
+                    src={el.webformatURL}
                     alt={el.tags}
                     hendleModal={this.hendleModal}
                   />
